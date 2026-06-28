@@ -1,0 +1,228 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.freezeBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: var(--accent-amber);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.rightControls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid var(--bg-card-border);
+  cursor: pointer;
+}
+
+.btnFreeze_live {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.btnFreeze_live:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btnFreeze_frozen {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.btnFreeze_frozen:hover {
+  background: var(--accent-amber);
+  color: #ffffff;
+}
+
+.btnExport {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.btnExport:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Leaderboard Table Styling */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  background-color: var(--bg-table-header);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-table-row-hover);
+}
+
+/* Rank Badges */
+.rankCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.rank1 {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.rank2 {
+  background: linear-gradient(135deg, #9ca3af, #4b5563);
+  box-shadow: 0 0 10px rgba(156, 163, 175, 0.4);
+}
+
+.rank3 {
+  background: linear-gradient(135deg, #ca8a04, #78350f);
+  box-shadow: 0 0 10px rgba(202, 138, 4, 0.3);
+}
+
+.participantName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.institution {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.problems {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.penalty {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* Mobile Layout stacking */
+@media (max-width: 640px) {
+  .tableContainer {
+    overflow-x: visible;
+  }
+  
+  .table {
+    display: block;
+  }
+  
+  .table thead {
+    display: none;
+  }
+  
+  .table tbody {
+    display: block;
+  }
+  
+  .table tbody tr {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: right;
+  }
+  
+  .table td:last-child {
+    border-bottom: none;
+  }
+  
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}

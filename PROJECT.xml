@@ -1,0 +1,1331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <metadata>
+    <name>CodeChef Contest Control Center</name>
+    <type>Frontend Development Assignment</type>
+    <organization>CodeChef VIT Chennai</organization>
+    <role>Full Stack Developer (Frontend Focus)</role>
+    <date>2026-06-28</date>
+  </metadata>
+
+  <techStack>
+    <framework name="Next.js" version="14.0" purpose="React framework with file-based routing"/>
+    <language name="TypeScript" version="5.0" purpose="Strong typing for maintainability"/>
+    <stateManagement name="Zustand" version="4.4" purpose="Lightweight, flexible state management"/>
+    <styling name="CSS Modules" purpose="Scoped styling, no naming conflicts"/>
+    <deployment name="Vercel" purpose="Seamless Next.js deployment, free tier"/>
+    <database name="Mock Data Layer" purpose="Decoupled from backend, testing-friendly"/>
+  </techStack>
+
+  <prd>
+    <vision>Create a real-time contest monitoring dashboard for organizers to manage and track competitive programming contests with dynamic state updates, complex filtering, and instant leaderboard recalculation.</vision>
+    
+    <userPersonas>
+      <persona>Contest Organizers (1-5 people managing the event)</persona>
+      <persona>Technical Admins (troubleshooting submissions, manual rejudging)</persona>
+    </userPersonas>
+
+    <features>
+      <feature priority="MUST" status="core">
+        <name>Contest Overview Dashboard</name>
+        <description>Display contest health metrics at a glance</description>
+        <components>
+          <component>Total Participants card</component>
+          <component>Total Problems card</component>
+          <component>Total Submissions card</component>
+          <component>Accepted Submissions card</component>
+          <component>Rejected Submissions card</component>
+          <component>Contest Status badge (Upcoming/Live/Ended)</component>
+          <component>Contest Countdown Timer (real-time, updates every second)</component>
+          <component>Recent Activities Feed (reverse chronological, last 15 events)</component>
+        </components>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Participant Management Table</name>
+        <description>Manage and monitor all contest participants</description>
+        <columns>
+          <column>Name</column>
+          <column>Institution</column>
+          <column>Current Rank</column>
+          <column>Problems Solved</column>
+          <column>Penalty Time (minutes)</column>
+          <column>Status</column>
+        </columns>
+        <functionality>
+          <item>Search by participant name (debounced 300ms)</item>
+          <item>Sort by rank, name, or penalty time</item>
+          <item>Multi-level filtering: rank range, institution, problems solved count</item>
+          <item>Pagination (10 rows per page)</item>
+        </functionality>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Submission Monitoring System</name>
+        <description>Track and filter all contest submissions</description>
+        <columns>
+          <column>Participant Name</column>
+          <column>Problem Name</column>
+          <column>Submission Time</column>
+          <column>Verdict (with color-coded badge)</column>
+          <column>Language Used</column>
+        </columns>
+        <verdicts>
+          <verdict name="Pending" color="#6b7280"/>
+          <verdict name="Running" color="#3b82f6"/>
+          <verdict name="Accepted" color="#10b981"/>
+          <verdict name="Wrong Answer" color="#ef4444"/>
+          <verdict name="Time Limit Exceeded" color="#f59e0b"/>
+          <verdict name="Runtime Error" color="#8b5cf6"/>
+        </verdicts>
+        <functionality>
+          <item>Filter by verdict (dropdown: All, AC, WA, TLE, RE)</item>
+          <item>Filter by problem (multi-select)</item>
+          <item>Filter by participant name (search)</item>
+          <item>Combine filters with AND logic</item>
+        </functionality>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Dynamic Leaderboard</name>
+        <description>Real-time ranking display with automatic updates</description>
+        <columns>
+          <column>Rank (auto-calculated)</column>
+          <column>Participant Name</column>
+          <column>Problems Solved</column>
+          <column>Penalty Time</column>
+        </columns>
+        <rankingLogic>
+          <primary>Problems solved (descending - more is better)</primary>
+          <secondary>Penalty time (ascending - lower is better, used as tiebreaker)</secondary>
+        </rankingLogic>
+        <updateTriggers>
+          <trigger>When submission verdict changes (accepted/rejected/etc)</trigger>
+          <trigger>When leaderboard is unfrozen</trigger>
+          <trigger>Real-time as submissions come in (if not frozen)</trigger>
+        </updateTriggers>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Leaderboard Freeze Mode</name>
+        <description>Lock rankings while submissions continue to be received</description>
+        <behavior>
+          <item>Toggle button on leaderboard: "Live" / "🔒 Frozen"</item>
+          <item>When frozen: submissions still appear in Submission Monitoring, but leaderboard display is locked</item>
+          <item>Frozen state snapshot is stored when toggled</item>
+          <item>When unfrozen: rankings are recalculated with all accumulated submissions</item>
+          <item>Visual indicator shows when freeze mode is active</item>
+        </behavior>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Rejudge System</name>
+        <description>Manual verdict changes with automatic cascading updates</description>
+        <userFlow>
+          <step>Admin clicks on verdict cell in Submission Monitoring</step>
+          <step>Modal opens showing current verdict</step>
+          <step>Admin selects new verdict from dropdown</step>
+          <step>Confirm button triggers cascade</step>
+        </userFlow>
+        <cascade>
+          <step priority="1">Update submission verdict</step>
+          <step priority="2">Update participant's problem count (increment/decrement)</step>
+          <step priority="3">Recalculate rankings (only if leaderboard NOT frozen)</step>
+          <step priority="4">Log activity: "Submission rejudged from X to Y"</step>
+          <step priority="5">UI updates reflect all changes instantly</step>
+        </cascade>
+      </feature>
+
+      <feature priority="MUST" status="core">
+        <name>Activity Feed</name>
+        <description>System event log in reverse chronological order</description>
+        <eventTypes>
+          <event>New participant joined</event>
+          <event>Submission received</event>
+          <event>Submission rejudged</event>
+          <event>Leaderboard frozen</event>
+          <event>Leaderboard unfrozen</event>
+        </eventTypes>
+        <display>
+          <item>Shows last 15 activities (max 100 stored)</item>
+          <item>Each event: timestamp, description, optional metadata</item>
+          <item>Icon indicators for different event types</item>
+          <item>Reverse chronological order (newest first)</item>
+        </display>
+      </feature>
+
+      <feature priority="SHOULD" status="bonus">
+        <name>Dark/Light Mode</name>
+        <description>Theme toggle with localStorage persistence</description>
+        <implementation>
+          <item>Toggle button in header</item>
+          <item>CSS variables for theming</item>
+          <item>Saved to localStorage, persists across refreshes</item>
+          <item>Color contrast maintained (WCAG AA)</item>
+        </implementation>
+      </feature>
+
+      <feature priority="SHOULD" status="bonus">
+        <name>CSV Export</name>
+        <description>Export leaderboard data for reporting</description>
+        <implementation>
+          <item>Button on leaderboard: "📥 Export CSV"</item>
+          <item>Exports: Rank, Name, Institution, Problems Solved, Penalty Time</item>
+          <item>Filename includes timestamp</item>
+        </implementation>
+      </feature>
+
+      <feature priority="NICE" status="bonus">
+        <name>Responsive Design</name>
+        <description>Mobile-first layout that works on all screen sizes</description>
+        <breakpoints>
+          <breakpoint device="mobile" width="320px-640px">
+            <behavior>Stack components vertically, sidebar becomes hamburger menu, tables become cards</behavior>
+          </breakpoint>
+          <breakpoint device="tablet" width="640px-1024px">
+            <behavior>2-column layouts, scrollable tables, collapsible sidebar</behavior>
+          </breakpoint>
+          <breakpoint device="desktop" width="1024px+">
+            <behavior>Full layout visible, all columns in tables, fixed sidebar</behavior>
+          </breakpoint>
+        </breakpoints>
+      </feature>
+    </features>
+
+    <requirements>
+      <functional>
+        <requirement>Handle 150+ participants without performance degradation</requirement>
+        <requirement>500+ submissions processable simultaneously</requirement>
+        <requirement>Real-time countdown timer (updates every second)</requirement>
+        <requirement>Multi-level filtering with AND logic (all filters must pass)</requirement>
+        <requirement>Debounced search (300ms delay to prevent lag)</requirement>
+      </functional>
+      <technical>
+        <requirement>Component-based architecture (reusable, testable)</requirement>
+        <requirement>Clean folder structure (organized by feature)</requirement>
+        <requirement>Proper state management (no prop drilling)</requirement>
+        <requirement>Mock data layer (extensible to real API)</requirement>
+        <requirement>Responsive design (mobile-first)</requirement>
+        <requirement>Accessibility (WCAG AA, keyboard navigation)</requirement>
+      </technical>
+    </requirements>
+
+    <successCriteria>
+      <criterion>All 8 MUST features working without bugs</criterion>
+      <criterion>Code follows React best practices</criterion>
+      <criterion>Responsive design tested on 3+ screen sizes</criterion>
+      <criterion>WCAG AA accessibility compliance</criterion>
+      <criterion>Deployed on Vercel with live URL</criterion>
+      <criterion>Comprehensive README with architecture explanation</criterion>
+      <criterion>Clean Git history (20+ meaningful commits)</criterion>
+      <criterion>70% baseline met, ready for interview</criterion>
+    </successCriteria>
+
+    <evaluationCriteria>
+      <criterion weight="20%">React Fundamentals (hooks, rendering, props, state)</criterion>
+      <criterion weight="20%">State Management (Zustand store design, data flow)</criterion>
+      <criterion weight="15%">Component Design (reusability, separation of concerns)</criterion>
+      <criterion weight="15%">Logic Implementation (ranking engine, filtering, cascades)</criterion>
+      <criterion weight="15%">Code Quality (clean, maintainable, well-structured)</criterion>
+      <criterion weight="10%">Responsiveness (mobile-first, accessibility, performance)</criterion>
+      <criterion weight="5%">Scalability (can grow to real backend, extensible)</criterion>
+    </evaluationCriteria>
+  </prd>
+
+  <architecture>
+    <overview>
+The application follows a strict separation of concerns pattern with 4 distinct layers:
+1. Presentational Components (UI only, no logic)
+2. Zustand Stores (state management, actions)
+3. Business Logic Engines (pure functions)
+4. Mock Data Layer (decoupled, testable)
+
+This ensures maintainability, testability, and scalability.
+    </overview>
+
+    <stores>
+      <store name="contestStore" responsibility="Contest metadata and metrics">
+        <state>
+          <property name="id" type="string">Contest identifier</property>
+          <property name="name" type="string">Contest name</property>
+          <property name="status" type="'upcoming'|'live'|'ended'">Current contest status</property>
+          <property name="startTime" type="Date">Contest start timestamp</property>
+          <property name="endTime" type="Date">Contest end timestamp</property>
+          <property name="totalProblems" type="number">Number of problems in contest</property>
+          <property name="totalParticipants" type="number">Total registered participants</property>
+          <property name="totalSubmissions" type="number">Total submissions received</property>
+          <property name="acceptedSubmissions" type="number">Submissions with Accepted verdict</property>
+          <property name="rejectedSubmissions" type="number">Submissions with non-Accepted verdict</property>
+          <property name="countdown" type="number">Time remaining in seconds</property>
+        </state>
+        <actions>
+          <action name="setContestStatus">Update contest status (upcoming→live→ended)</action>
+          <action name="updateCountdown">Decrement countdown by 1 second (called every 1000ms)</action>
+          <action name="setMetrics">Update any metric (participants, submissions, etc)</action>
+        </actions>
+      </store>
+
+      <store name="participantStore" responsibility="Participants, ranking, filtering">
+        <state>
+          <property name="participants" type="Participant[]">All participants with scores</property>
+          <property name="rankedParticipants" type="Participant[]">Sorted by rank (calculated)</property>
+          <property name="filteredParticipants" type="Participant[]">After filtering/searching</property>
+          <property name="filters" type="ParticipantFilters">Current filter state (search, institution, rank range)</property>
+          <property name="sortBy" type="'rank'|'name'|'penalty'">Current sort field</property>
+          <property name="currentPage" type="number">Pagination current page</property>
+          <property name="pageSize" type="number">Items per page (10)</property>
+        </state>
+        <actions>
+          <action name="recalculateRankings">Sort participants by problems (desc) then penalty (asc), update ranks</action>
+          <action name="setFilters">Apply multi-level filters and reset to page 1</action>
+          <action name="setSortBy">Sort current filtered list by field</action>
+          <action name="setCurrentPage">Navigate to pagination page</action>
+          <action name="updateParticipantScore">Add/subtract problems solved for a participant</action>
+        </actions>
+      </store>
+
+      <store name="submissionStore" responsibility="Submissions and verdict filtering">
+        <state>
+          <property name="submissions" type="Submission[]">All submissions received</property>
+          <property name="filteredSubmissions" type="Submission[]">After filtering</property>
+          <property name="filters" type="SubmissionFilters">Verdict, problem, participant, search term</property>
+        </state>
+        <actions>
+          <action name="updateSubmissionVerdict">Change verdict of a submission (triggers cascades)</action>
+          <action name="setVerdictFilter">Filter by verdict (Pending, AC, WA, TLE, RE, etc)</action>
+          <action name="setProblemFilter">Filter by problem ID</action>
+          <action name="setParticipantFilter">Filter by participant name</action>
+          <action name="setSearchFilter">Search by participant name (debounced in component)</action>
+          <action name="addSubmission">Add new submission and log activity</action>
+        </actions>
+      </store>
+
+      <store name="uiStore" responsibility="UI state and toggles">
+        <state>
+          <property name="theme" type="'light'|'dark'">Current theme mode</property>
+          <property name="activeTab" type="'overview'|'participants'|'submissions'|'leaderboard'">Current page</property>
+          <property name="sidebarOpen" type="boolean">Sidebar visibility (mobile)</property>
+          <property name="isFrozen" type="boolean">Leaderboard freeze mode</property>
+        </state>
+        <actions>
+          <action name="toggleTheme">Switch theme and save to localStorage</action>
+          <action name="setActiveTab">Change active page</action>
+          <action name="setSidebarOpen">Toggle sidebar (mobile)</action>
+          <action name="toggleFreeze">Toggle freeze mode, store snapshot if freezing</action>
+        </actions>
+      </store>
+
+      <store name="activityStore" responsibility="Activity event logging">
+        <state>
+          <property name="activities" type="Activity[]">Chronologically ordered events (newest first)</property>
+        </state>
+        <actions>
+          <action name="logActivity">Add new activity to front of array, keep max 100</action>
+          <action name="clearActivities">Clear all activities</action>
+        </actions>
+      </store>
+    </stores>
+
+    <businessLogic>
+      <engine name="rankingEngine">
+        <purpose>Calculate participant rankings based on problems solved and penalty time</purpose>
+        <algorithm>
+1. Sort participants by:
+   - Primary: Problems solved (descending, higher is better rank)
+   - Secondary: Penalty time (ascending, lower is better, used as tiebreaker)
+2. Assign rank = array index + 1
+3. Return sorted array with updated currentRank property
+
+Example:
+- Participant A: 8 problems, 245 min penalty → Rank 1
+- Participant B: 8 problems, 260 min penalty → Rank 2 (same problems, higher penalty)
+- Participant C: 7 problems, 200 min penalty → Rank 3 (fewer problems)
+        </algorithm>
+        <function>calculateRankings(participants: Participant[]): Participant[]</function>
+        <calledWhen>
+          <trigger>After submission verdict changes (rejudge)</trigger>
+          <trigger>When leaderboard is unfrozen</trigger>
+          <trigger>Submission received with Accepted verdict (if not frozen)</trigger>
+        </calledWhen>
+      </engine>
+
+      <engine name="filterEngine">
+        <purpose>Apply multi-level filters to participants and submissions</purpose>
+        <logic>AND logic - ALL filters must pass for item to be included</logic>
+        <participantFilters>
+          <filter name="searchTerm">Name contains (case-insensitive)</filter>
+          <filter name="selectedInstitution">Institution equals</filter>
+          <filter name="minRank">Rank greater than or equal</filter>
+          <filter name="maxRank">Rank less than or equal</filter>
+          <filter name="minProblemsSolved">Problems solved greater than or equal</filter>
+        </participantFilters>
+        <submissionFilters>
+          <filter name="verdict">Verdict equals (or 'ALL')</filter>
+          <filter name="problemId">Problem ID equals</filter>
+          <filter name="participantId">Participant ID equals</filter>
+          <filter name="searchTerm">Participant name contains</filter>
+        </submissionFilters>
+        <function>applyParticipantFilters(participants, filters)</function>
+        <function>applySubmissionFilters(submissions, filters)</function>
+      </engine>
+
+      <engine name="rejudgeManager">
+        <purpose>Handle submission verdict changes with cascading updates</purpose>
+        <cascade>
+1. Update submission verdict in submissionStore
+2. Calculate problem count delta (Accepted now vs Accepted before)
+3. Update participant score: problemsSolved += delta
+4. If NOT frozen: recalculateRankings()
+5. Log activity: "Submission rejudged from X to Y"
+6. UI components subscribed to stores re-render automatically
+        </cascade>
+        <pseudoCode>
+handleRejudge(submissionId, newVerdict):
+  oldSubmission = submissionStore.getSubmission(submissionId)
+  oldVerdict = oldSubmission.verdict
+  
+  submissionStore.updateSubmissionVerdict(submissionId, newVerdict)
+  
+  isNewlyAccepted = oldVerdict != Accepted && newVerdict == Accepted
+  isNoLongerAccepted = oldVerdict == Accepted && newVerdict != Accepted
+  
+  problemsDelta = 0
+  if isNewlyAccepted: problemsDelta = +1
+  if isNoLongerAccepted: problemsDelta = -1
+  
+  participantStore.updateParticipantScore(oldSubmission.participantId, problemsDelta)
+  
+  if NOT uiStore.isFrozen:
+    participantStore.recalculateRankings()
+  
+  activityStore.logActivity("Submission rejudged", ...)
+        </pseudoCode>
+      </engine>
+    </businessLogic>
+
+    <dataFlow>
+      <flow name="Submission Verdict Change">
+        User clicks on verdict cell in Submission Monitoring table
+              ↓
+        RejudgeModal opens with current verdict
+              ↓
+        User selects new verdict and confirms
+              ↓
+        submissionStore.updateSubmissionVerdict(submissionId, newVerdict)
+              ↓
+        participantStore.updateParticipantScore(participantId, delta)
+              ↓
+        IF (NOT isFrozen):
+          participantStore.recalculateRankings()
+        ELSE:
+          (rankings locked until unfreeze)
+              ↓
+        activityStore.logActivity("Submission rejudged...")
+              ↓
+        All subscribed UI components re-render:
+          - Submission table shows new verdict
+          - Participant table shows updated problem count
+          - Leaderboard shows updated rank (if not frozen)
+          - Activity feed shows rejudge event
+      </flow>
+
+      <flow name="Leaderboard Freeze">
+        User clicks "Freeze Leaderboard" button
+              ↓
+        uiStore.toggleFreeze()
+              ↓
+        Component stores snapshot: frozenSnapshot = [...rankedParticipants]
+              ↓
+        Leaderboard component displays frozenSnapshot instead of rankedParticipants
+              ↓
+        New submissions still arrive and are logged:
+          - submissionStore receives submission
+          - participantStore updates scores
+          - BUT: recalculateRankings() is SKIPPED (isFrozen === true)
+          - Activity feed shows new submission
+              ↓
+        After contest, user clicks "Unfreeze Leaderboard"
+              ↓
+        uiStore.toggleFreeze()
+              ↓
+        frozenSnapshot is cleared
+              ↓
+        participantStore.recalculateRankings() is called ONCE
+              ↓
+        Leaderboard instantly updates with all accumulated submissions
+      </flow>
+
+      <flow name="Search and Filter Participants">
+        User types in search box
+              ↓
+        Component state updates (searchTerm = "priya")
+              ↓
+        useDebounce hook waits 300ms
+              ↓
+        After 300ms of no new input:
+              ↓
+        setFilters({ ...filters, searchTerm: debouncedValue })
+              ↓
+        participantStore.setFilters() applies applyParticipantFilters()
+              ↓
+        Filtered results update in table
+              ↓
+        User also selects institution filter
+              ↓
+        setFilters({ ...filters, institution: "VIT" })
+              ↓
+        applyParticipantFilters() applies AND logic:
+          Return participants WHERE (name contains "priya") AND (institution == "VIT")
+              ↓
+        Table shows intersection of both filters
+      </flow>
+    </dataFlow>
+
+    <componentHierarchy>
+Root Layout
+├── Header
+│   ├── Logo / Contest Name
+│   ├── ThemeToggle
+│   └── Navigation Links
+├── Sidebar
+│   ├── Dashboard link
+│   ├── Participants link
+│   ├── Submissions link
+│   └── Leaderboard link
+└── Main Content Area
+    ├── [Dashboard Page]
+    │   ├── ContestOverview
+    │   │   ├── StatsCard (x4: Participants, Submissions, Accepted, Rejected)
+    │   │   ├── StatusBadge
+    │   │   └── Acceptance Rate
+    │   ├── ContestCountdown
+    │   │   ├── Timer (HH:MM:SS)
+    │   │   └── Real-time update every 1s
+    │   └── ActivityFeed
+    │       ├── ActivityItem (x15, reverse chronological)
+    │       ├── Timestamp
+    │       ├── Event type icon
+    │       └── Description
+    │
+    ├── [Participants Page]
+    │   ├── FilterPanel
+    │   │   ├── SearchInput (debounced)
+    │   │   ├── InstitutionSelect
+    │   │   ├── RankRangeInputs
+    │   │   └── ProblemasSolvedInput
+    │   ├── ParticipantTable
+    │   │   ├── ParticipantRow (x10 per page)
+    │   │   │   ├── Rank
+    │   │   │   ├── Name (clickable for details)
+    │   │   │   ├── Institution
+    │   │   │   ├── Problems Solved
+    │   │   │   └── Penalty Time
+    │   │   └── Pagination
+    │   │       ├── Previous button
+    │   │       ├── Page indicator
+    │   │       └── Next button
+    │
+    ├── [Submissions Page]
+    │   ├── FilterBar
+    │   │   ├── VerdictSelect
+    │   │   ├── ProblemSelect
+    │   │   └── ParticipantSearch
+    │   └── SubmissionTable
+    │       ├── SubmissionRow (x all filtered)
+    │       │   ├── Participant Name
+    │       │   ├── Problem Name
+    │       │   ├── Submission Time
+    │       │   ├── VerdictBadge (clickable to rejudge)
+    │       │   └── Language
+    │       └── RejudgeModal (conditional)
+    │           ├── Current Verdict display
+    │           ├── New Verdict dropdown
+    │           ├── Confirm button
+    │           └── Cancel button
+    │
+    └── [Leaderboard Page]
+        ├── FreezeToggle button
+        ├── FreezeNotice (conditional, if frozen)
+        └── LeaderboardTable
+            └── LeaderboardRow (x50 displayed)
+                ├── Rank (auto-calculated)
+                ├── Participant Name
+                ├── Problems Solved
+                └── Penalty Time
+    </componentHierarchy>
+
+    <folderStructure>
+src/
+├── pages/
+│   ├── index.tsx              # Dashboard page
+│   ├── participants.tsx       # Participant management
+│   ├── submissions.tsx        # Submission monitoring
+│   ├── leaderboard.tsx        # Leaderboard
+│   ├── _app.tsx               # Next.js app wrapper
+│   └── _document.tsx          # HTML document wrapper
+│
+├── components/
+│   ├── layout/
+│   │   ├── Header.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   └── Layout.tsx
+│   ├── dashboard/
+│   │   ├── StatsCard.tsx
+│   │   ├── ContestOverview.tsx
+│   │   ├── ContestCountdown.tsx
+│   │   └── ActivityFeed.tsx
+│   ├── participants/
+│   │   ├── ParticipantTable.tsx
+│   │   ├── ParticipantRow.tsx
+│   │   ├── FilterPanel.tsx
+│   │   └── Pagination.tsx
+│   ├── submissions/
+│   │   ├── SubmissionTable.tsx
+│   │   ├── SubmissionRow.tsx
+│   │   ├── VerdictBadge.tsx
+│   │   ├── SubmissionFilters.tsx
+│   │   └── RejudgeModal.tsx
+│   ├── leaderboard/
+│   │   ├── LeaderboardTable.tsx
+│   │   ├── LeaderboardRow.tsx
+│   │   ├── FreezeToggle.tsx
+│   │   └── RankIndicator.tsx
+│   └── common/
+│       ├── Badge.tsx
+│       ├── Modal.tsx
+│       ├── Spinner.tsx
+│       └── ErrorBoundary.tsx
+│
+├── stores/
+│   ├── contestStore.ts
+│   ├── participantStore.ts
+│   ├── submissionStore.ts
+│   ├── uiStore.ts
+│   ├── activityStore.ts
+│   └── index.ts
+│
+├── lib/
+│   ├── engines/
+│   │   ├── rankingEngine.ts
+│   │   ├── filterEngine.ts
+│   │   └── rejudgeManager.ts
+│   ├── utils/
+│   │   ├── formatters.ts
+│   │   ├── validators.ts
+│   │   └── csvExporter.ts
+│   └── types/
+│       ├── contest.ts
+│       ├── participant.ts
+│       ├── submission.ts
+│       └── activity.ts
+│
+├── data/
+│   ├── mock/
+│   │   ├── mockParticipants.ts  (150 entries)
+│   │   ├── mockSubmissions.ts   (500+ entries)
+│   │   ├── mockProblems.ts      (10-15 entries)
+│   │   ├── mockActivities.ts    (seeded)
+│   │   └── mockContest.ts
+│   └── seeds/
+│       └── generateMockData.ts
+│
+├── styles/
+│   ├── globals.css
+│   ├── responsive.css
+│   └── [Component].module.css
+│
+├── hooks/
+│   ├── useContestTimer.ts
+│   ├── useDebounce.ts
+│   ├── useRanking.ts
+│   ├── useLocalStorage.ts
+│   └── useResponsive.ts
+│
+└── README.md
+    </folderStructure>
+  </architecture>
+
+  <implementation>
+    <phase name="Phase 1: Foundation" days="1">
+      <task priority="1">Initialize Next.js project with TypeScript</task>
+      <task priority="2">Install dependencies: zustand, types</task>
+      <task priority="3">Create all type definitions (Contest, Participant, Submission, Activity)</task>
+      <task priority="4">Create 5 Zustand stores with initial state</task>
+      <task priority="5">Generate mock data (150 participants, 500+ submissions)</task>
+      <task priority="6">Create folder structure</task>
+      <deliverable>All stores initialized, mock data ready, no UI yet</deliverable>
+    </phase>
+
+    <phase name="Phase 2: Dashboard" days="1">
+      <task priority="1">Create Layout wrapper (Header, Sidebar, main content)</task>
+      <task priority="2">Build StatsCard reusable component</task>
+      <task priority="3">Implement ContestOverview (4 stat cards)</task>
+      <task priority="4">Create useContestTimer hook for countdown</task>
+      <task priority="5">Build ContestCountdown component</task>
+      <task priority="6">Create ActivityFeed component (last 15 events)</task>
+      <deliverable>Dashboard page shows all metrics, countdown updates real-time</deliverable>
+    </phase>
+
+    <phase name="Phase 3: Participants" days="1">
+      <task priority="1">Implement rankingEngine (sort by problems, then penalty)</task>
+      <task priority="2">Implement filterEngine for participants</task>
+      <task priority="3">Create useDebounce hook</task>
+      <task priority="4">Build ParticipantTable with columns</task>
+      <task priority="5">Add search (debounced), sorting, pagination</task>
+      <task priority="6">Add FilterPanel for multi-level filtering</task>
+      <deliverable>Participant table fully functional with search, sort, filters, pagination</deliverable>
+    </phase>
+
+    <phase name="Phase 4: Submissions" days="1">
+      <task priority="1">Create VerdictBadge component with color coding</task>
+      <task priority="2">Build SubmissionTable with all columns</task>
+      <task priority="3">Implement verdict filtering (dropdown)</task>
+      <task priority="4">Implement problem filtering</task>
+      <task priority="5">Implement participant search</task>
+      <task priority="6">Combine all filters with AND logic</task>
+      <deliverable>Submission table with all filters working independently and combined</deliverable>
+    </phase>
+
+    <phase name="Phase 5: Leaderboard" days="1">
+      <task priority="1">Build LeaderboardTable component</task>
+      <task priority="2">Display top 50 ranked participants</task>
+      <task priority="3">Create FreezeToggle button with visual indicator</task>
+      <task priority="4">Implement freeze mode logic (snapshot + lock)</task>
+      <task priority="5">Test: submissions arrive during freeze, rankings don't update</task>
+      <task priority="6">Test: unfreeze recalculates all rankings</task>
+      <deliverable>Leaderboard with working freeze mode, visual feedback clear</deliverable>
+    </phase>
+
+    <phase name="Phase 6: Rejudge" days="1">
+      <task priority="1">Create RejudgeModal component</task>
+      <task priority="2">Make verdict cells clickable in SubmissionRow</task>
+      <task priority="3">Implement rejudge cascade logic</task>
+      <task priority="4">Update participant score when verdict changes</task>
+      <task priority="5">Recalculate rankings (if not frozen)</task>
+      <task priority="6">Log activity for rejudge events</task>
+      <deliverable>Rejudge system working end-to-end with all cascades</deliverable>
+    </phase>
+
+    <phase name="Phase 7: Polish &amp; Deploy" days="1">
+      <task priority="1">Add responsive CSS (mobile-first breakpoints)</task>
+      <task priority="2">Add dark/light mode toggle with persistence</task>
+      <task priority="3">Add CSV export for leaderboard</task>
+      <task priority="4">Test on mobile (375px), tablet (768px), desktop (1440px)</task>
+      <task priority="5">Accessibility audit (ARIA, keyboard nav, color contrast)</task>
+      <task priority="6">Deploy to Vercel</task>
+      <deliverable>Deployed, responsive, accessible, ready for interview</deliverable>
+    </phase>
+
+    <keyConcepts>
+      <concept name="Store Actions with Cascades">
+When one action affects multiple stores, coordinate them in the action itself.
+Example: submissionStore.updateSubmissionVerdict() calls:
+  → participantStore.updateScore()
+  → participantStore.recalculateRankings() (if not frozen)
+  → activityStore.logActivity()
+      </concept>
+
+      <concept name="Pure Function Engines">
+rankingEngine.calculateRankings() and filterEngine.applyFilters() are pure functions.
+Input → output, no side effects. Easy to test, reuse, reason about.
+      </concept>
+
+      <concept name="Zustand Getters vs Setters">
+Use set() to update state: set(state => ({ ...state, newData }))
+Use getState() to read other store state: useOtherStore.getState().data
+      </concept>
+
+      <concept name="Debounced Search">
+Search happens on every keystroke in component state.
+Real filtering happens 300ms after user stops typing (debounced).
+Prevents lag on large datasets.
+      </concept>
+
+      <concept name="Mobile-First Responsive">
+Default CSS is for mobile (320px).
+Use @media (min-width: 640px) for tablet.
+Use @media (min-width: 1024px) for desktop.
+Don't use max-width, always use min-width.
+      </concept>
+
+      <concept name="Freeze Mode Snapshot">
+When user clicks freeze: store snapshot of current rankedParticipants.
+Leaderboard component displays snapshot, not live data.
+When user unfreezes: clear snapshot, recalculate rankings once.
+      </concept>
+    </keyConcepts>
+
+    <commonPatterns>
+      <pattern name="Store Template">
+import { create } from 'zustand';
+
+const useMyStore = create((set, get) => ({
+  // State
+  data: initialValue,
+  
+  // Actions
+  updateData: (newData) => set({ data: newData }),
+  complexAction: () => {
+    set(state => ({
+      data: processedData
+    }));
+  },
+}));
+      </pattern>
+
+      <pattern name="Filtering with AND Logic">
+return items.filter((item) => {
+  if (filters.condition1 && !passes(item, filters.condition1)) return false;
+  if (filters.condition2 && !passes(item, filters.condition2)) return false;
+  // ... more conditions
+  return true; // All passed
+});
+      </pattern>
+
+      <pattern name="Debounced Search">
+const [searchTerm, setSearchTerm] = useState('');
+const debouncedSearch = useDebounce(searchTerm, 300);
+
+useEffect(() => {
+  setFilters({ searchTerm: debouncedSearch });
+}, [debouncedSearch]);
+      </pattern>
+
+      <pattern name="Mobile-First CSS">
+.container {
+  display: flex;
+  flex-direction: column; /* Mobile default */
+}
+
+@media (min-width: 640px) {
+  .container {
+    flex-direction: row; /* Tablet and up */
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    display: grid; /* Desktop */
+  }
+}
+      </pattern>
+
+      <pattern name="Cascade Update">
+const handleRejudge = (submissionId, newVerdict) => {
+  // 1. Update submission
+  submissionStore.updateVerdictBySubmissionId(submissionId, newVerdict);
+  
+  // 2. Update participant (get from submission)
+  const submission = submissionStore.getSubmission(submissionId);
+  const delta = calculateDelta(oldVerdict, newVerdict);
+  participantStore.updateParticipantScore(submission.participantId, delta);
+  
+  // 3. Recalculate (if not frozen)
+  if (!uiStore.getState().isFrozen) {
+    participantStore.recalculateRankings();
+  }
+  
+  // 4. Log activity
+  activityStore.logActivity(ActivityType.SubmissionRejudged, ...);
+};
+      </pattern>
+    </commonPatterns>
+
+    <testingChecklist>
+      <test category="Core Features">
+        <item>Dashboard countdown updates every second ✓</item>
+        <item>Participant table search debounces correctly ✓</item>
+        <item>Participant table sorts by rank/name/penalty ✓</item>
+        <item>Participant table pagination works ✓</item>
+        <item>Filters combine with AND logic ✓</item>
+        <item>Submission verdict filtering works ✓</item>
+        <item>Leaderboard shows correct ranks ✓</item>
+        <item>Freeze button locks leaderboard ✓</item>
+        <item>Submissions arrive during freeze (still log) ✓</item>
+        <item>Unfreeze recalculates rankings ✓</item>
+        <item>Rejudge modal opens/closes ✓</item>
+        <item>Rejudge updates participant score ✓</item>
+        <item>Rejudge updates leaderboard (if not frozen) ✓</item>
+        <item>Activity feed shows rejudge events ✓</item>
+      </test>
+
+      <test category="Responsive Design">
+        <item>Mobile (375px): no horizontal scroll ✓</item>
+        <item>Mobile: sidebar becomes hamburger ✓</item>
+        <item>Mobile: tables become cards ✓</item>
+        <item>Tablet (768px): 2-column layout ✓</item>
+        <item>Desktop (1440px): full layout ✓</item>
+      </test>
+
+      <test category="Accessibility">
+        <item>All buttons have aria-label ✓</item>
+        <item>Tab navigation works through all elements ✓</item>
+        <item>Color contrast 4.5:1 minimum ✓</item>
+        <item>Focus states visible ✓</item>
+        <item>Screen reader announces table headers ✓</item>
+      </test>
+
+      <test category="Edge Cases">
+        <item>Empty search results show message ✓</item>
+        <item>Pagination on 0 results doesn't crash ✓</item>
+        <item>Tie in ranking: lower penalty wins ✓</item>
+        <item>Rejudge AC→WA: problem count decreases ✓</item>
+        <item>Rejudge WA→AC: problem count increases ✓</item>
+      </test>
+    </testingChecklist>
+
+    <gitCommitSuggestions>
+      <commit day="1" num="1">setup: initialize next.js with typescript and zustand</commit>
+      <commit day="1" num="2">types: define contest, participant, submission, activity types</commit>
+      <commit day="1" num="3">stores: implement all 5 zustand stores with initial state</commit>
+      <commit day="1" num="4">data: generate realistic mock datasets (150 participants, 500+ submissions)</commit>
+      <commit day="2" num="5">components/layout: create header, sidebar, main layout wrapper</commit>
+      <commit day="2" num="6">hooks: implement useContestTimer for real-time countdown</commit>
+      <commit day="2" num="7">dashboard: build contest overview with stats cards</commit>
+      <commit day="2" num="8">dashboard: add countdown timer and activity feed</commit>
+      <commit day="3" num="9">lib/engines: implement ranking engine (sort by problems, penalty)</commit>
+      <commit day="3" num="10">lib/engines: implement filter engine for participants</commit>
+      <commit day="3" num="11">hooks: add useDebounce for search optimization</commit>
+      <commit day="3" num="12">components/participants: build participant table with search, sort, pagination</commit>
+      <commit day="3" num="13">components/participants: add multi-level filter panel</commit>
+      <commit day="4" num="14">components/submissions: build submission table with verdict badge</commit>
+      <commit day="4" num="15">components/submissions: add verdict, problem, participant filtering</commit>
+      <commit day="5" num="16">components/leaderboard: build leaderboard table with dynamic ranks</commit>
+      <commit day="5" num="17">components/leaderboard: implement freeze mode toggle and logic</commit>
+      <commit day="6" num="18">components/submissions: add rejudge modal and verdict click handler</commit>
+      <commit day="6" num="19">stores: implement rejudge cascade (update score, recalculate rank, log)</commit>
+      <commit day="6" num="20">components/dashboard: enhance activity feed with icons and timestamps</commit>
+      <commit day="7" num="21">styles: add mobile-first responsive design (320px to 1440px)</commit>
+      <commit day="7" num="22">features: add dark/light mode toggle with localStorage persistence</commit>
+      <commit day="7" num="23">features: add CSV export for leaderboard</commit>
+      <commit day="7" num="24">a11y: improve accessibility (ARIA labels, keyboard navigation, color contrast)</commit>
+      <commit day="7" num="25">docs: write comprehensive README with setup, architecture, assumptions</commit>
+      <commit day="7" num="26">chore: final polish and testing</commit>
+      <commit day="7" num="27">deploy: push to vercel for live deployment</commit>
+    </gitCommitSuggestions>
+  </implementation>
+
+  <interview>
+    <pitch duration="60 seconds">
+I built a Contest Control Center using Next.js and Zustand. The app manages real-time contest monitoring with dynamic leaderboard updates, submission verdict filtering, and complex state cascades.
+
+The architecture has 5 independent Zustand stores—contest, participants, submissions, UI, and activities—that interact through pure functions. When a submission verdict changes, I trigger a ranking recalculation cascade that updates participant scores, recalculates ranks (unless in freeze mode), and logs an activity.
+
+Key features: dynamic leaderboard with freeze mode (submissions log but ranks lock), rejudge system with automatic score/rank updates, multi-level participant filtering (rank + institution + problems solved), responsive mobile-first design, and CSV export.
+
+I shipped it on Vercel with clean architecture focused on maintainability—each component is presentational, state lives in stores, business logic is in pure functions.
+    </pitch>
+
+    <questions>
+      <question number="1">
+        <ask>Walk us through your architecture</ask>
+        <answerPoints>
+          <point>Separation of concerns: UI, stores, logic engines, data</point>
+          <point>5 Zustand stores, each with single responsibility</point>
+          <point>Pure functions for ranking and filtering</point>
+          <point>Mock data decouples frontend from backend</point>
+          <point>Data flow example: rejudge → score update → ranking recalculation</point>
+        </answerPoints>
+      </question>
+
+      <question number="2">
+        <ask>How does the ranking algorithm work?</ask>
+        <answerPoints>
+          <point>Primary: problems solved (descending, higher is better)</point>
+          <point>Secondary: penalty time (ascending, lower is better, tiebreaker)</point>
+          <point>Algorithm: sort array, assign rank = index + 1</point>
+          <point>Example: 8 problems, 245 min → Rank 1; 8 problems, 260 min → Rank 2</point>
+          <point>Called when: submission verdict changes, leaderboard unfreezes</point>
+        </answerPoints>
+      </question>
+
+      <question number="3">
+        <ask>Explain freeze mode</ask>
+        <answerPoints>
+          <point>Toggle button locks leaderboard display</point>
+          <point>During freeze: submissions still logged, but ranking display locked</point>
+          <point>Snapshot stored when freezing, restored when unfreezing</point>
+          <point>When unfreezing: rankings recalculated with all submissions</point>
+          <point>Implementation: conditional recalculateRankings() call</point>
+        </answerPoints>
+      </question>
+
+      <question number="4">
+        <ask>How do you handle multi-level filtering?</ask>
+        <answerPoints>
+          <point>AND logic: all filters must pass</point>
+          <point>Example: (Rank &lt; 50) AND (Institution = VIT) AND (Problems &gt; 3)</point>
+          <point>Implementation: filter() with multiple conditions, return false if any fail</point>
+          <point>Each filter independent, combined in single pass</point>
+          <point>Pagination resets when filters change</point>
+        </answerPoints>
+      </question>
+
+      <question number="5">
+        <ask>Why Zustand over Redux or Context API?</ask>
+        <answerPoints>
+          <point>Bundle size: 2kb (vs Redux 15kb, Context &lt;1kb)</point>
+          <point>For 5 stores with ~15 actions each: Zustand is perfect fit</point>
+          <point>Redux overkill (lots of boilerplate), Context API not scalable</point>
+          <point>Zustand has clean API, selector-based subscriptions, built-in DevTools</point>
+          <point>Trade-off: Redux better for 100+ stores (this project is mid-sized)</point>
+        </answerPoints>
+      </question>
+
+      <question number="6">
+        <ask>What happens when two stores need to sync?</ask>
+        <answerPoints>
+          <point>Use getState() to access other stores from within an action</point>
+          <point>Example: submissionStore calls participantStore.updateScore()</point>
+          <point>Side effects happen in the action itself</point>
+          <point>Keep side effects minimal to avoid circular dependencies</point>
+        </answerPoints>
+      </question>
+
+      <question number="7">
+        <ask>How do you optimize rendering performance?</ask>
+        <answerPoints>
+          <point>React.memo for table rows (prevent cascading re-renders)</point>
+          <point>useMemo for expensive calculations (ranking, filtering)</point>
+          <point>Pagination: never render more than 50 rows in DOM</point>
+          <point>Debounced search: 300ms delay prevents filter spam</point>
+          <point>Selector-based subscriptions in Zustand</point>
+        </answerPoints>
+      </question>
+
+      <question number="8">
+        <ask>What would you improve with more time?</ask>
+        <answerPoints>
+          <point>Unit tests (ranking engine, filter engine, cascades)</point>
+          <point>Backend integration (real API, database, authentication)</point>
+          <point>WebSocket for real-time updates</point>
+          <point>Undo/redo system (Redux DevTools-like)</point>
+          <point>Advanced features: notifications, analytics, heatmaps</point>
+          <point>If forced to pick one: unit tests</point>
+        </answerPoints>
+      </question>
+
+      <question number="9">
+        <ask>Tell me about a challenging bug you fixed</ask>
+        <answerPoints>
+          <point>Bug: Ranking not updating after freeze mode</point>
+          <point>Root cause: participantStore had stale data after submissions came during freeze</point>
+          <point>Fix: Call syncScoresFromSubmissions() before recalculateRankings()</point>
+          <point>Lesson: Multi-store apps need explicit sync points</point>
+        </answerPoints>
+      </question>
+
+      <question number="10">
+        <ask>What did you learn building this?</ask>
+        <answerPoints>
+          <point>State management matters: clear patterns prevent bugs</point>
+          <point>Pure functions are your friend: testable and reusable</point>
+          <point>Responsive design is a discipline: mobile-first changes your thinking</point>
+          <point>Separation of concerns: UI shouldn't know about business logic</point>
+        </answerPoints>
+      </question>
+    </questions>
+
+    <technicalDeepDives>
+      <deepDive topic="Debounced Search">
+useDebounce hook waits 300ms after user stops typing before filtering.
+Implementation: useEffect with setTimeout, cleanup function cancels previous timer.
+Result: Search on "p" → "pr" → "pri" → "priya" = 1 filter operation, not 5.
+      </deepDive>
+
+      <deepDive topic="Activity Feed Reverse Chronological">
+New activities added to FRONT of array: [newActivity, ...oldActivities]
+Always slice(0, 10) to show newest 10 events.
+O(1) insertion, no need to reverse.
+Max 100 activities stored (old ones deleted).
+      </deepDive>
+
+      <deepDive topic="Ranking Ties">
+When two participants have same problems solved:
+Look at penalty time (minutes from first submission to accepted).
+Lower penalty wins (they solved it faster).
+Example: Both solved 5 problems, one in 100 min, one in 120 min → first rank higher.
+      </deepDive>
+
+      <deepDive topic="Cascade Consistency">
+Rejudge must update all affected stores in order:
+1. Submission (verdict)
+2. Participant (score)
+3. Leaderboard (ranking)
+4. Activity (log)
+If any step fails, entire cascade fails (transaction-like).
+In real app, would use backend for atomicity.
+      </deepDive>
+    </technicalDeepDives>
+  </interview>
+
+  <deploymentGuide>
+    <steps>
+      <step number="1">Build locally: npm run build</step>
+      <step number="2">Test production build: npm run start</step>
+      <step number="3">Push to GitHub: git push origin main</step>
+      <step number="4">Vercel auto-deploys (watch dashboard)</step>
+      <step number="5">Share live URL: https://your-repo.vercel.app</step>
+    </steps>
+
+    <preDeploymentChecklist>
+      <item>No console errors or warnings ✓</item>
+      <item>All features tested (70% + bonus) ✓</item>
+      <item>Mobile responsive (375px, 768px, 1440px) ✓</item>
+      <item>Dark mode works ✓</item>
+      <item>Accessibility tested (keyboard, screen reader) ✓</item>
+      <item>Git history clean (20+ commits) ✓</item>
+      <item>README.md complete ✓</item>
+      <item>tsconfig and next.config correct ✓</item>
+    </preDeploymentChecklist>
+
+    <readmeTemplate>
+# CodeChef Contest Control Center
+
+## Overview
+A responsive, real-time contest monitoring dashboard for contest organizers.
+
+## Tech Stack
+- **Frontend**: React.js 18, Next.js 14, TypeScript 5
+- **State Management**: Zustand 4.4
+- **Styling**: CSS Modules (mobile-first)
+- **Data**: Mock layer (extensible to API)
+- **Deployment**: Vercel
+
+## Features
+- [x] Contest Overview Dashboard (stats, countdown, activities)
+- [x] Participant Management (search, sort, filter, pagination)
+- [x] Submission Monitoring (verdict filtering, rejudge)
+- [x] Dynamic Leaderboard (real-time ranking)
+- [x] Leaderboard Freeze Mode (lock rankings, continue logging)
+- [x] Rejudge System (verdict changes with cascade)
+- [x] Activity Feed (reverse chronological log)
+- [x] Responsive Design (mobile-first, 320px-1440px+)
+- [x] Dark/Light Mode (with persistence)
+- [x] CSV Export (leaderboard data)
+
+## Architecture
+
+### Stores (Zustand)
+- **contestStore**: Contest metadata, countdown, metrics
+- **participantStore**: Participants, ranking, filtering, pagination
+- **submissionStore**: Submissions, verdict filtering
+- **uiStore**: Theme, freeze mode, active tab
+- **activityStore**: Activity log (max 100, reverse chronological)
+
+### Business Logic (Pure Functions)
+- **rankingEngine**: Sort by problems (desc), penalty (asc)
+- **filterEngine**: Apply multi-level AND filters
+- **rejudgeManager**: Handle verdict changes and cascades
+
+### Data Flow
+User Action → Store Action → Pure Function → Cascade → UI Update
+
+## Folder Structure
+```
+src/
+├── pages/              # Next.js routes
+├── components/         # React components (presentational)
+├── stores/             # Zustand state management
+├── lib/engines/        # Business logic (pure functions)
+├── lib/types/          # TypeScript definitions
+├── data/mock/          # Mock data (150 participants, 500+ submissions)
+├── styles/             # CSS Modules
+└── hooks/              # Custom React hooks
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
+```bash
+git clone &lt;repo&gt;
+cd codechef-control-center
+npm install
+```
+
+### Development
+```bash
+npm run dev
+# Open http://localhost:3000
+```
+
+### Build &amp; Deploy
+```bash
+npm run build
+npm run start
+npm run deploy  # to Vercel (auto-deploy on git push)
+```
+
+## Key Design Decisions
+
+### 1. Zustand over Redux
+- Lightweight (2kb vs 15kb)
+- Simple API for mid-sized project (5 stores)
+- Built-in DevTools, selector-based subscriptions
+- Trade-off: Redux better for 100+ stores
+
+### 2. Pure Function Engines
+- rankingEngine and filterEngine are pure functions
+- Input → Output, no side effects
+- Easy to test, reuse, reason about
+- Separate from UI and state management
+
+### 3. Freeze Mode Implementation
+- Store snapshot of rankings when freezing
+- Skip recalculateRankings() during freeze
+- Recalculate once when unfreezing
+- Submissions still logged throughout
+
+### 4. Mobile-First Responsive
+- Default CSS for 320px (mobile)
+- Breakpoints: 640px (tablet), 1024px (desktop)
+- Cards on mobile, grids on tablet, tables on desktop
+- CSS Modules for scoped styling
+
+### 5. Mock Data Layer
+- 150 realistic participants from various institutions
+- 500+ submissions with realistic verdict distribution (70% AC, 20% WA, 5% TLE, 5% RE)
+- Decoupled from backend—swap with real API later
+
+## State Management Pattern
+
+### Store Action Example
+```typescript
+// Update submission verdict
+submissionStore.updateSubmissionVerdict(submissionId, newVerdict)
+  ↓
+// Trigger cascades
+participantStore.updateParticipantScore(...)
+if (!isFrozen) participantStore.recalculateRankings()
+activityStore.logActivity(...)
+  ↓
+// Components subscribed to stores re-render
+```
+
+### Multi-Level Filtering
+```typescript
+// AND logic: all filters must pass
+applyParticipantFilters(participants, {
+  searchTerm: 'priya',
+  selectedInstitution: 'VIT',
+  minRank: 1,
+  maxRank: 50,
+})
+// Returns only: name contains "priya" AND institution = "VIT" AND rank in [1, 50]
+```
+
+## Performance Optimizations
+- **React.memo**: Table rows don't re-render on parent update
+- **useMemo**: Expensive calculations cached
+- **Debounced search**: 300ms delay prevents spam
+- **Pagination**: Max 50 rows in DOM
+- **Selector subscriptions**: Only necessary components re-render
+
+## Accessibility
+- WCAG AA compliance (4.5:1 color contrast)
+- Semantic HTML (&lt;table&gt;, &lt;nav&gt;, &lt;main&gt;)
+- ARIA labels on all buttons and form inputs
+- Keyboard navigation (Tab, Enter, Escape)
+- Focus states visible
+
+## Responsive Breakpoints
+- **Mobile**: 320px - 640px (cards, single column, hamburger menu)
+- **Tablet**: 640px - 1024px (2-column grid, scrollable tables)
+- **Desktop**: 1024px+ (full layout, multi-column, fixed sidebar)
+
+## Testing Checklist
+- [ ] Countdown updates every second
+- [ ] Search debounces, doesn't lag
+- [ ] Filters combine with AND logic
+- [ ] Leaderboard freezes (submissions log, ranks lock)
+- [ ] Rejudge updates participant score and ranking
+- [ ] Mobile (375px): no horizontal scroll
+- [ ] Dark mode: sufficient color contrast
+- [ ] Keyboard: Tab through all elements
+
+## Assumptions
+- Single contest (start + end time)
+- Penalty time is cumulative minutes from first submission to accepted
+- Ranking tiebreaker: same problems → lower penalty wins
+- Mock data sufficient for demo (150 participants, 500+ submissions)
+
+## Live Deployment
+**URL**: [https://your-repo.vercel.app](link)
+
+Deployed on Vercel (auto-deploys on `git push` to main).
+
+## Contact
+Built by: [Your Name]
+GitHub: [Your Repo Link]
+    </readmeTemplate>
+  </deploymentGuide>
+
+  <quickReference>
+    <section name="60-Second Pitch">
+I built a Contest Control Center using Next.js and Zustand. The app manages real-time contest monitoring with dynamic leaderboard updates, submission verdict filtering, and complex state cascades. Architecture: 5 Zustand stores + pure function engines. Key feature: rejudge cascade that updates scores, recalculates ranks (unless frozen), and logs activity. Shipped on Vercel with responsive, accessible design.
+    </section>
+
+    <section name="Store Template">
+const useMyStore = create((set, get) => ({
+  data: initialValue,
+  action: (param) => set({ data: newValue }),
+}));
+    </section>
+
+    <section name="Ranking Algorithm">
+Sort by: problems (desc) → penalty (asc)
+Example: 8 problems, 245 min → Rank 1; 8 problems, 260 min → Rank 2
+    </section>
+
+    <section name="Freeze Mode">
+If freezing: frozenSnapshot = [...rankedParticipants]
+If unfreezing: clear snapshot, call recalculateRankings()
+During freeze: submissions logged, but leaderboard displays snapshot (locked)
+    </section>
+
+    <section name="Rejudge Cascade">
+1. submissionStore.updateVerdictBySubmissionId()
+2. participantStore.updateParticipantScore()
+3. if (!isFrozen) participantStore.recalculateRankings()
+4. activityStore.logActivity()
+    </section>
+
+    <section name="Mobile-First CSS">
+Default: mobile (320px)
+@media (min-width: 640px): tablet
+@media (min-width: 1024px): desktop
+    </section>
+
+    <section name="Debounced Search">
+Component state updates on keystroke.
+useDebounce waits 300ms.
+setFilters() called after delay.
+    </section>
+
+    <section name="Interview Talking Points">
+- Separation of concerns (UI, stores, logic)
+- 5 Zustand stores, pure function engines
+- Ranking: problems desc, penalty asc
+- Freeze mode: snapshot + conditional recalc
+- Rejudge cascade: 4-step update process
+- Mobile-first responsive design
+- Zustand chosen for bundle size + simplicity
+    </section>
+
+    <section name="Testing">
+✓ Countdown updates
+✓ Search doesn't lag
+✓ Filters AND together
+✓ Freeze locks ranks
+✓ Rejudge cascades
+✓ Mobile responsive
+✓ Keyboard navigation
+    </section>
+  </quickReference>
+
+</project>

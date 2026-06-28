@@ -1,0 +1,343 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Filter Panel Styling */
+.filterPanel {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .filterPanel {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input, .select {
+  background: var(--bg-input);
+  border: 1px solid var(--bg-input-border);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.92rem;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.input:focus, .select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Verdict Badges */
+.verdictBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: all 0.2s ease;
+}
+
+.verdictBadge_Pending {
+  background: rgba(107, 114, 128, 0.12);
+  color: var(--accent-gray);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.verdictBadge_Running {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.verdictBadge_Accepted {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.verdictBadge_WrongAnswer {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--accent-rose);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.verdictBadge_TimeLimitExceeded {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.verdictBadge_RuntimeError {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--accent-purple);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Interactive Verdict cell */
+.verdictCell {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.verdictCell:hover .verdictBadge {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
+  filter: brightness(1.15);
+}
+
+.rejudgeIndicator {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.verdictCell:hover .rejudgeIndicator {
+  opacity: 1;
+}
+
+/* Modal Overlay & Card styling */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  animation: fadeInModal 0.2s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: slideInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInModal {
+  from { transform: scale(0.95) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.modalDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-main);
+  padding: 14px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--bg-card-border);
+  font-size: 0.9rem;
+}
+
+.modalDetailRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modalDetailLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.modalDetailValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btnCancel {
+  background: var(--bg-input);
+  border: 1px solid var(--bg-input-border);
+  color: var(--text-primary);
+}
+
+.btnCancel:hover {
+  background: var(--bg-card-border);
+}
+
+.btnConfirm {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btnConfirm:hover {
+  background: var(--primary-hover);
+}
+
+/* Table Styling */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  background-color: var(--bg-table-header);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-table-row-hover);
+}
+
+.participantName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.problemName {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.subTime {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.language {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Mobile responsive card stacking */
+@media (max-width: 640px) {
+  .tableContainer {
+    overflow-x: visible;
+  }
+  
+  .table {
+    display: block;
+  }
+  
+  .table thead {
+    display: none;
+  }
+  
+  .table tbody {
+    display: block;
+  }
+  
+  .table tbody tr {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: right;
+  }
+  
+  .table td:last-child {
+    border-bottom: none;
+  }
+  
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .rejudgeIndicator {
+    display: inline;
+    margin-left: 6px;
+    margin-top: 0;
+  }
+}
